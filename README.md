@@ -175,6 +175,54 @@ Download a CSV of all bookings from the dashboard before the event as an offline
 
 ---
 
+## Connecting your domain
+
+One domain covers both the website and the ticket emails — they use different
+DNS record types, so nothing conflicts.
+
+| Purpose | Record | Set up in |
+|---|---|---|
+| Website | A / CNAME | Vercel → Settings → Domains |
+| Sending ticket emails | TXT (SPF + DKIM) | Resend → Domains |
+| Receiving replies (optional) | MX | Your mailbox provider |
+
+### 1. Point the website at Vercel
+
+In Vercel, **Settings → Domains → Add**. It shows the exact A/CNAME record to
+paste into your registrar. Then set `NEXT_PUBLIC_SITE_URL` to the new address
+with no trailing slash — every ticket link in every email is built from it, so
+this must be right before you sell anything.
+
+### 2. Verify the domain in Resend
+
+In Resend, **Domains → Add Domain**. It gives you TXT records to paste at your
+registrar. Once verified, set:
+
+```
+EMAIL_FROM="Smirk Society <tickets@yourdomain.com>"
+```
+
+Consider verifying a subdomain (`send.yourdomain.com`) rather than the root, so
+sending reputation stays isolated from your main domain.
+
+### 3. Decide where replies go
+
+Resend sends mail; it does not receive it. Guests who hit reply land at
+whatever `SUPPORT_EMAIL` is set to, which can be an ordinary Gmail account —
+they never see that address unless they reply.
+
+For a real `hello@yourdomain.com` inbox you need a mailbox provider. Zoho Mail
+is free for a custom domain; Google Workspace is paid. Either adds MX records.
+
+> **Only ever publish one SPF record.** If you set up both Resend and a mailbox
+> provider, merge their SPF values into a single TXT record. Two separate SPF
+> records fail authentication for both, and mail starts landing in spam.
+
+### 4. Check it end to end
+
+Book a test pass and confirm the email arrives from your own domain, is not in
+spam, and that the ticket link in it opens on the real site.
+
 ## Filling in your contact details
 
 Open `src/lib/event.ts` and fill in the `CONTACT` block:
