@@ -42,8 +42,15 @@ connection string. It looks like `postgresql://user:pass@host/db?sslmode=require
 
 ### 4. Set up email (optional but recommended)
 
-Sign up at [resend.com](https://resend.com), create an API key. Without this the site still works —
-buyers just won't get a confirmation email, though their ticket page still loads.
+Sign up at [resend.com](https://resend.com) and create an API key. Without this the site still
+works — buyers just won't get a confirmation email, though their ticket page still loads and the
+dashboard flags anything unsent.
+
+**You need a domain to send properly.** Resend only lets you send from a domain you have verified
+by adding its DNS records, so a Gmail address will not work as the sender. Without a domain,
+tickets go out from Resend's shared `onboarding@resend.dev` address — fine for testing, but poor
+deliverability and it looks untrustworthy on a real ticket. Buy a domain before selling to the
+public; it also replaces the `*.vercel.app` URL with something you can print on a poster.
 
 ### 5. Configure
 
