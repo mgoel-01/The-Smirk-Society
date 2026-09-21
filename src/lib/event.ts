@@ -7,7 +7,14 @@ export const EVENT = {
   host: "The Smirk Society",
   name: "Smirk'N'Raas",
   year: "2026",
+  /** Reads on its own — used for page titles, meta descriptions and prose. */
   tagline: "Ghaziabad's Biggest Dandiya Night",
+  /**
+   * The badge that sits directly above the DANDIYA NIGHT title, as on the
+   * poster. Kept separate from `tagline` so the words "Dandiya Night" do not
+   * appear twice in a row.
+   */
+  ribbon: "Ghaziabad's Biggest",
   blurb: "Dance · Music · Food · Shopping and so much more!",
   dateLabel: "17th October 2026",
   dayLabel: "Saturday",

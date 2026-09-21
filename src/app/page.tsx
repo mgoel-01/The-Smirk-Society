@@ -119,7 +119,7 @@ function Hero() {
           style={{ animationDelay: "120ms" }}
         >
           <span className="rounded-full bg-gradient-to-r from-wine-600 via-rose-600 to-wine-600 px-6 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-300 shadow-lg shadow-rose-900/40 sm:text-xs">
-            {EVENT.tagline}
+            {EVENT.ribbon}
           </span>
         </div>
 
