@@ -47,9 +47,9 @@ type ContactDetails = {
 // "" type would narrow to `never` inside the `if (CONTACT.phone)` guards that
 // decide whether each channel renders.
 export const CONTACT: ContactDetails = {
-  whatsapp: "",
-  phone: "",
-  address: "",
+  whatsapp: "918448702151",
+  phone: "+91 84487 02151",
+  address: "A-14, Gagan Enclave\nGhaziabad, Uttar Pradesh",
   hours: "10 AM to 8 PM, every day",
 };
 
