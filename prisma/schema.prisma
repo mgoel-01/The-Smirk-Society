@@ -1,0 +1,98 @@
+// Smirk'N'Raas 2026 — data model
+//
+// Design notes:
+//  * Money is stored in PAISE as an integer. Never floats for currency.
+//  * `amountPaise` is computed server-side from the price table and is the
+//    only amount ever sent to Razorpay. The browser cannot influence it.
+//  * `razorpayOrderId` / `razorpayPaymentId` are unique so a replayed webhook
+//    or a double-submitted verification cannot create duplicate bookings.
+//  * Ticket.token is a 32-byte random value — the QR payload. It is a
+//    capability: unguessable, so it can be safely used in a public URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PassType {
+  SINGLE
+  COUPLE
+  GROUP4
+}
+
+enum RegistrationStatus {
+  PENDING // order created, payment not yet completed
+  PAID // signature verified, tickets issued
+  FAILED // Razorpay reported failure
+  REFUNDED // refunded after the fact
+}
+
+model Registration {
+  id          String @id @default(cuid())
+  bookingCode String @unique // human-friendly, e.g. SNR-7K3M9Q
+
+  fullName String
+  email    String
+  phone    String
+
+  passType PassType
+  quantity Int // number of passes of this type
+  seats    Int // total people admitted (quantity * seatsPerPass)
+
+  amountPaise Int // authoritative, server-computed
+  currency    String @default("INR")
+
+  status RegistrationStatus @default(PENDING)
+
+  razorpayOrderId   String  @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+  paymentMethod     String?
+  failureReason     String?
+
+  paidAt      DateTime?
+  emailSentAt DateTime?
+
+  // Minimal request metadata, kept for fraud triage only.
+  ipHash    String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tickets Ticket[]
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Ticket {
+  id    String @id @default(cuid())
+  token String @unique // QR payload — 32 random bytes, base64url
+
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  seats Int // people this single QR admits
+
+  checkedInAt DateTime?
+  checkedInBy String?
+
+  createdAt DateTime @default(now())
+
+  @@index([registrationId])
+  @@index([checkedInAt])
+}
+
+/// Stores Razorpay event ids so a redelivered webhook is a no-op.
+model WebhookEvent {
+  id         String   @id // Razorpay's x-razorpay-event-id
+  eventType  String
+  receivedAt DateTime @default(now())
+
+  @@index([receivedAt])
+}

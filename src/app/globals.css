@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens — sampled from the event poster so the site and the print
+   artwork read as one piece: midnight plum ground, warm gold foil, festival
+   magenta. Everything below composes from these.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-night-950: #0D0308;
+  --color-night-900: #12040C;
+  --color-night-800: #1a0610;
+  --color-night-700: #26091a;
+  --color-night-600: #3c1226;
+  --color-night-500: #4a1730;
+
+  --color-wine-600: #6d1638;
+  --color-wine-500: #8c1d45;
+
+  --color-rose-600: #a3144c;
+  --color-rose-500: #c2185b;
+  --color-rose-400: #e0447e;
+  --color-rose-300: #d98ba8;
+
+  --color-gold-300: #fbeccd;
+  --color-gold-400: #f5d9a8;
+  --color-gold-500: #e0b872;
+  --color-gold-600: #c9963f;
+
+  --color-cream: #f3e3d0;
+  --color-muted: #a98d80;
+
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-script: var(--font-dancing), cursive;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 6s linear infinite;
+  --animate-rise: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-14px) rotate(1.5deg); }
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-night-900);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Keyboard focus must stay obvious against the dark ground. */
+:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-rose-500);
+  color: #fff;
+}
+
+/* Gold foil lettering, as on the poster. The sweep is decorative only. */
+.foil {
+  background: linear-gradient(
+    100deg,
+    #c9963f 0%, #f5d9a8 18%, #fff6e2 30%,
+    #e0b872 45%, #f5d9a8 62%, #c9963f 85%, #f5d9a8 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+}
+
+.rose-foil {
+  background: linear-gradient(100deg, #e0447e, #f5d9a8 45%, #e0447e 90%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hairline gold rule with a diamond centre — the poster's divider motif. */
+.gold-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--color-gold-600);
+}
+.gold-rule::before,
+.gold-rule::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  max-width: 5rem;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+}
+
+.card-glow {
+  box-shadow:
+    0 0 0 1px rgb(224 184 114 / 0.14),
+    0 18px 50px -20px rgb(0 0 0 / 0.85);
+}
+
+/* Warm vignette + bokeh haze used behind the hero and the passes section. */
+.festival-haze {
+  background:
+    radial-gradient(60% 45% at 12% 8%, rgb(194 24 91 / 0.22), transparent 70%),
+    radial-gradient(55% 45% at 88% 12%, rgb(224 184 114 / 0.16), transparent 70%),
+    radial-gradient(70% 55% at 50% 100%, rgb(109 22 56 / 0.35), transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
