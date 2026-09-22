@@ -57,8 +57,21 @@ export const PASS_LIST: PassDefinition[] = [
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 10;
 
-/** Total capacity in people. Orders are refused once confirmed seats hit this. */
-export const VENUE_CAPACITY = Number(process.env.VENUE_CAPACITY ?? 1500);
+/**
+ * Total capacity in people. Orders are refused once confirmed seats hit this.
+ *
+ * Parsed defensively: a value pasted from `.env` may arrive wrapped in quotes,
+ * and `Number('"500"')` is NaN — which would silently disable the capacity
+ * check entirely, since every comparison against NaN is false. Fall back to a
+ * safe number rather than overselling the venue.
+ */
+function parseCapacity(raw: string | undefined): number {
+  if (!raw) return 500;
+  const parsed = Number(raw.trim().replace(/^["']|["']$/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 500;
+}
+
+export const VENUE_CAPACITY = parseCapacity(process.env.VENUE_CAPACITY);
 
 export function quoteFor(passType: PassType, quantity: number) {
   const pass = PASSES[passType];
