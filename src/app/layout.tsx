@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Dancing_Script, Inter } from "next/font/google";
 import { EVENT } from "@/lib/event";
+import { env } from "@/lib/env";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -27,9 +28,9 @@ const title = `${EVENT.name} ${EVENT.year} — ${EVENT.tagline}`;
 const description = `${EVENT.tagline}. ${EVENT.dateLabel}, ${EVENT.timeLabel} at ${EVENT.venue}, ${EVENT.venueArea}. Live band, DJ, dhol, food and shopping stalls. Book your pass online.`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
+  // env.siteUrl strips stray quotes and the trailing slash; `new URL` would
+  // throw on a value copied out of .env with its quotes still attached.
+  metadataBase: new URL(env.siteUrl),
   title: { default: title, template: `%s — ${EVENT.name} ${EVENT.year}` },
   description,
   keywords: [

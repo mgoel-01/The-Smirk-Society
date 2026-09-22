@@ -1,5 +1,6 @@
 import "server-only";
 import crypto from "node:crypto";
+import { env } from "./env";
 
 /**
  * Booking codes are read aloud at the gate, so they use an alphabet with no
@@ -28,7 +29,7 @@ export function newTicketToken(): string {
  */
 export function hashIp(ip: string): string {
   return crypto
-    .createHmac("sha256", process.env.SESSION_SECRET ?? "unsalted")
+    .createHmac("sha256", env.sessionSecret)
     .update(ip)
     .digest("hex")
     .slice(0, 32);
