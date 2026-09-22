@@ -6,6 +6,15 @@ import { newBookingCode, newTicketToken } from "./ids";
 import { sendTicketEmail } from "./email";
 
 /**
+ * How long an unpaid checkout keeps holding its seats.
+ *
+ * Long enough to cover a slow UPI collect request or a bank redirect and a
+ * guest who hesitates, short enough that abandoned carts do not lock up a
+ * small venue. Confirmation accepts a payment that lands after this anyway.
+ */
+const CHECKOUT_HOLD_MS = 30 * 60 * 1000;
+
+/**
  * Seats already committed. PENDING orders are counted too: a checkout window
  * is open for them, and overselling is far worse than briefly under-selling.
  * Stale pending orders age out via `releaseStalePending`.
@@ -18,8 +27,7 @@ export async function seatsTaken(): Promise<number> {
         { status: "PAID" },
         {
           status: "PENDING",
-          // an abandoned checkout stops holding seats after 20 minutes
-          createdAt: { gte: new Date(Date.now() - 20 * 60 * 1000) },
+          createdAt: { gte: new Date(Date.now() - CHECKOUT_HOLD_MS) },
         },
       ],
     },
@@ -34,12 +42,15 @@ export async function seatsRemaining(): Promise<number> {
 /**
  * Marks long-abandoned checkouts as FAILED so their seats return to the pool.
  * Cheap enough to run opportunistically before each new order.
+ *
+ * This is a guess, not a verdict: if the payment turns out to have succeeded,
+ * `confirmRegistration` claims the booking back out of FAILED.
  */
 export async function releaseStalePending(): Promise<void> {
   await prisma.registration.updateMany({
     where: {
       status: "PENDING",
-      createdAt: { lt: new Date(Date.now() - 20 * 60 * 1000) },
+      createdAt: { lt: new Date(Date.now() - CHECKOUT_HOLD_MS) },
     },
     data: { status: "FAILED", failureReason: "Checkout abandoned" },
   });
@@ -101,9 +112,9 @@ export type ConfirmResult =
  *
  * Idempotency is the whole point of this function. Both the browser callback
  * and the Razorpay webhook call it for the same payment, often at the same
- * moment. The conditional `updateMany` on status = PENDING is the gate: the
- * database decides exactly one caller wins, and only that caller mints tickets
- * and sends the email. Everyone else gets `already-confirmed`.
+ * moment. The conditional `updateMany` below is the gate: the database decides
+ * exactly one caller wins, and only that caller mints tickets and sends the
+ * email. Everyone else gets `already-confirmed`.
  */
 export async function confirmRegistration(params: {
   razorpayOrderId: string;
@@ -118,10 +129,23 @@ export async function confirmRegistration(params: {
 
   if (!registration) return { outcome: "not-found" };
 
+  // FAILED is claimable as well as PENDING, and that matters for real money.
+  // A slow UPI collect request or netbanking redirect can outlast the stale
+  // sweep, which marks the booking FAILED to release its seats. If the genuine
+  // payment.captured then arrived and we only accepted PENDING, the guest
+  // would have paid and received nothing.
+  //
+  // A captured payment is authoritative, so it overrides an assumed failure.
+  // PAID is still excluded — that is the guard that keeps this idempotent —
+  // and so is REFUNDED, which must never silently revert to PAID.
   const claimed = await prisma.registration.updateMany({
-    where: { id: registration.id, status: "PENDING" },
+    where: {
+      id: registration.id,
+      status: { in: ["PENDING", "FAILED"] },
+    },
     data: {
       status: "PAID",
+      failureReason: null,
       razorpayPaymentId: params.razorpayPaymentId,
       razorpaySignature: params.razorpaySignature,
       paymentMethod: params.paymentMethod,
@@ -130,7 +154,7 @@ export async function confirmRegistration(params: {
   });
 
   if (claimed.count === 0) {
-    // Someone else already confirmed it (or it was refunded/failed).
+    // Someone else already confirmed it, or it was refunded.
     const existing = registration.tickets[0];
     if (registration.status === "PAID" && existing) {
       return {
