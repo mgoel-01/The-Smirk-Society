@@ -43,15 +43,21 @@ export default function TermsPage() {
 
       <Section heading="3. Your ticket">
         <p>
-          After a successful payment we email a QR code to the address you
-          provided. That QR is your entry. Each pass scans once — once it has
-          been used at the gate it cannot be used again.
+          After a successful payment your pass appears on screen with a QR
+          code, which you can download and keep on your phone. That QR is your
+          entry. Each pass scans once — once it has been used at the gate it
+          cannot be used again.
+        </p>
+        <p>
+          If you lose your pass, recover it at any time from{" "}
+          <a href="/find" className="text-gold-500 underline underline-offset-2">
+            Find my pass
+          </a>{" "}
+          using the email address and mobile number you booked with.
         </p>
         <p>
           Keep your QR private. We cannot tell who is holding a code, so anyone
-          who presents it first may be admitted in your place. If you do not
-          receive your email within a few minutes, check your spam folder and
-          then contact us with your booking ID.
+          who presents it first may be admitted in your place.
         </p>
       </Section>
 

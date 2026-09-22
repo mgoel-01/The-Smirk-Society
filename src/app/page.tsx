@@ -223,7 +223,7 @@ function Hero() {
           style={{ animationDelay: "660ms" }}
         >
           <ShieldIcon className="h-3.5 w-3.5 text-gold-600" />
-          Secure payment via Razorpay · Instant QR ticket on email
+          Secure payment via Razorpay · Download your QR pass instantly
         </p>
       </div>
     </section>
