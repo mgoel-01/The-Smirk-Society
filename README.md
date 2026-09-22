@@ -170,9 +170,13 @@ only as salted hashes.
    - **Amber** — this pass was already scanned. Check for a duplicate.
    - **Red** — not a valid pass.
 
-The camera needs HTTPS, which the deployed site has. Chrome on Android is the most reliable.
-If a camera ever fails, paste the ticket link from the guest's email into the manual box — it does
-the same thing.
+The camera needs HTTPS, which the deployed site has. It works on any modern phone: Chrome on
+Android uses the browser's native barcode decoder, and everything else — including every iPhone
+browser, which has no native decoder at all — falls back to decoding in software. The software
+path is slightly slower, so hold the phone steady for a moment.
+
+If a camera ever fails, type the guest's booking code into the manual box, or paste the ticket
+link from their email. Either works.
 
 Download a CSV of all bookings from the dashboard before the event as an offline backup.
 

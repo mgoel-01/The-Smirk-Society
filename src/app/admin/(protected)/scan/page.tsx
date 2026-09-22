@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import jsQR from "jsqr";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Gate check-in.
  *
- * Uses the browser's native BarcodeDetector where it exists (Chrome on
- * Android — what door staff will almost certainly be holding). Where it does
- * not, the manual booking-code box is a complete fallback, so the gate never
- * depends on the camera working.
+ * Decodes QR codes two ways, because the gate cannot depend on which phone a
+ * staff member happens to be holding:
+ *
+ *  1. `BarcodeDetector` where the browser has it (Chrome on Android). It is
+ *     hardware-accelerated and the fastest option.
+ *  2. jsQR otherwise. Safari and every iPhone browser lack BarcodeDetector
+ *     entirely, so without this an iPhone could not scan at all.
+ *
+ * The manual booking-code box remains as a third fallback for a dead camera.
  *
  * Camera access requires HTTPS or localhost. On a deployed site that is
  * automatic; over a bare LAN IP the browser will refuse.
@@ -48,7 +54,7 @@ export default function ScanPage() {
   const lastScanRef = useRef<{ token: string; at: number }>({ token: "", at: 0 });
 
   const [cameraOn, setCameraOn] = useState(false);
-  const [supported, setSupported] = useState<boolean | null>(null);
+  const [decoder, setDecoder] = useState<"native" | "jsqr" | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [manual, setManual] = useState("");
   const [busy, setBusy] = useState(false);
@@ -56,7 +62,9 @@ export default function ScanPage() {
   const [scannedCount, setScannedCount] = useState(0);
 
   useEffect(() => {
-    setSupported(typeof window !== "undefined" && "BarcodeDetector" in window);
+    const native =
+      typeof window !== "undefined" && "BarcodeDetector" in window;
+    setDecoder(native ? "native" : "jsqr");
   }, []);
 
   const submitToken = useCallback(async (token: string) => {
@@ -104,34 +112,59 @@ export default function ScanPage() {
       }
       setCameraOn(true);
 
-      const detector = new window.BarcodeDetector!({ formats: ["qr_code"] });
+      const useNative = "BarcodeDetector" in window;
+      const detector = useNative
+        ? new window.BarcodeDetector!({ formats: ["qr_code"] })
+        : null;
 
       const tick = async () => {
         const video = videoRef.current;
         const canvas = canvasRef.current;
 
         if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const context = canvas.getContext("2d");
+          // jsQR inspects every pixel in JavaScript, so a full-resolution
+          // frame from a modern phone would drop the frame rate to a crawl.
+          // Downscaling to ~480px keeps decoding fast and is still far more
+          // detail than a QR needs. BarcodeDetector is native and does not
+          // care, but sharing one canvas keeps the loop simple.
+          const scale = Math.min(1, 480 / (video.videoWidth || 480));
+          canvas.width = Math.round(video.videoWidth * scale);
+          canvas.height = Math.round(video.videoHeight * scale);
+
+          const context = canvas.getContext("2d", { willReadFrequently: true });
           if (context) {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            let value: string | undefined;
             try {
-              const codes = await detector.detect(canvas);
-              const value = codes[0]?.rawValue;
-              const now = Date.now();
-              if (
-                value &&
-                !(
-                  value === lastScanRef.current.token &&
-                  now - lastScanRef.current.at < 3000
-                )
-              ) {
-                lastScanRef.current = { token: value, at: now };
-                await submitToken(value);
+              if (detector) {
+                value = (await detector.detect(canvas))[0]?.rawValue;
+              } else {
+                const frame = context.getImageData(
+                  0,
+                  0,
+                  canvas.width,
+                  canvas.height,
+                );
+                value =
+                  jsQR(frame.data, frame.width, frame.height, {
+                    inversionAttempts: "dontInvert",
+                  })?.data ?? undefined;
               }
             } catch {
               // A single failed frame is normal; keep scanning.
+            }
+
+            const now = Date.now();
+            if (
+              value &&
+              !(
+                value === lastScanRef.current.token &&
+                now - lastScanRef.current.at < 3000
+              )
+            ) {
+              lastScanRef.current = { token: value, at: now };
+              await submitToken(value);
             }
           }
         }
@@ -192,24 +225,21 @@ export default function ScanPage() {
 
           {!cameraOn && (
             <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-              {supported === false ? (
-                <p className="text-sm leading-relaxed text-muted">
-                  This browser cannot scan QR codes. Use Chrome on Android, or
-                  type the booking code below.
+              <p className="text-sm text-muted">
+                Point the camera at the QR on the guest&rsquo;s phone.
+              </p>
+              <button
+                type="button"
+                onClick={startCamera}
+                className="mt-5 rounded-full bg-rose-500 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-rose-400"
+              >
+                Start camera
+              </button>
+              {decoder === "jsqr" && (
+                <p className="mt-4 text-[11px] leading-relaxed text-muted">
+                  Hold the phone steady — this browser decodes in software, so
+                  it reads a fraction slower than Chrome on Android.
                 </p>
-              ) : (
-                <>
-                  <p className="text-sm text-muted">
-                    Point the camera at the QR on the guest&rsquo;s phone.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={startCamera}
-                    className="mt-5 rounded-full bg-rose-500 px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-rose-400"
-                  >
-                    Start camera
-                  </button>
-                </>
               )}
             </div>
           )}
