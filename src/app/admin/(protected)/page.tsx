@@ -30,6 +30,10 @@ export default async function AdminDashboard() {
     prisma.ticket.count({ where: { checkedInAt: { not: null } } }),
   ]);
 
+  // Only flag undelivered emails when email is actually switched on;
+  // otherwise every row would carry a warning that means nothing.
+  const emailEnabled = Boolean(process.env.RESEND_API_KEY);
+
   const seatsSold = paid._sum.seats ?? 0;
   const revenuePaise = paid._sum.amountPaise ?? 0;
   const fillPercent = Math.min(
@@ -144,7 +148,7 @@ export default async function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3 text-cream">
                       {registration.fullName}
-                      {!registration.emailSentAt && (
+                      {emailEnabled && !registration.emailSentAt && (
                         <span
                           className="ml-2 rounded bg-amber-500/18 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-amber-300"
                           title="The ticket email could not be delivered"

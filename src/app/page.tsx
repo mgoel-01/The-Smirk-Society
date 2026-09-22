@@ -463,7 +463,11 @@ function Faq() {
   const faqs = [
     {
       q: "How do I get my ticket after paying?",
-      a: "The moment your payment succeeds you will see your ticket on screen, and a confirmation email with a QR code lands in your inbox. Save it to your phone — that QR is your entry.",
+      a: "The moment your payment succeeds your pass appears on screen with a QR code. Tap Download your pass to save it to your phone — that image is your entry, so you do not need to keep the page open.",
+    },
+    {
+      q: "I closed the page and lost my pass. What now?",
+      a: "Go to Find my pass and enter the email address and mobile number you booked with. Your passes come straight back up, ready to view or download again.",
     },
     {
       q: "What if I book a couple or group pass?",
@@ -477,10 +481,7 @@ function Faq() {
       q: "Can I get a refund or transfer my pass?",
       a: "Passes are non-refundable, but they are transferable. If you cannot make it, forward your QR to whoever takes your place — just remember each pass scans only once.",
     },
-    {
-      q: "I did not receive my confirmation email.",
-      a: "Check your spam and promotions folders first. If it is still missing, DM us on Instagram with your booking ID and we will resend it right away.",
-    },
+
     {
       q: "Are children allowed?",
       a: "Absolutely — this is a family event. Children under 5 enter free with a paying adult; anyone older needs their own pass.",
@@ -582,6 +583,9 @@ function Footer() {
             &copy; {EVENT.year} {EVENT.host}. All rights reserved.
           </p>
           <div className="flex gap-5">
+            <Link href="/find" className="transition-colors hover:text-gold-400">
+              Find my pass
+            </Link>
             <Link href="/contact" className="transition-colors hover:text-gold-400">
               Contact
             </Link>

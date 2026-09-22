@@ -22,8 +22,8 @@ export default function RefundsPage() {
 
       <Section heading="But they are transferable">
         <p>
-          If you cannot make it, give your pass to someone who can. Forward them
-          the QR code from your confirmation email — whoever presents it at the
+          If you cannot make it, give your pass to someone who can. Send them
+          your downloaded pass or its link — whoever presents that QR at the
           gate will be admitted. You do not need to tell us, and there is no
           transfer fee.
         </p>

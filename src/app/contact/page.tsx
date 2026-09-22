@@ -214,12 +214,18 @@ export default function ContactPage() {
           <p className="mt-2.5 text-sm leading-relaxed text-cream/80">
             Have your <span className="text-cream">booking ID</span> ready (it
             looks like <span className="font-mono text-gold-500">SNR-7K3M9Q</span>{" "}
-            and is in your confirmation email). Quoting it lets us find your
-            booking straight away.
+            and is printed on your downloaded pass). Quoting it lets us find
+            your booking straight away.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-cream/80">
-            Didn&rsquo;t get your ticket email? Check spam and promotions first,
-            then message us — we can resend it.
+            Lost your pass? You don&rsquo;t need us — go to{" "}
+            <Link
+              href="/find"
+              className="text-gold-500 underline underline-offset-2"
+            >
+              Find my pass
+            </Link>{" "}
+            and enter the email and mobile number you booked with.
           </p>
         </div>
 

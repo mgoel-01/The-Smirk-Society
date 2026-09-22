@@ -13,7 +13,8 @@ Guests pick a pass, pay through Razorpay, and get a QR ticket by email. Staff sc
 |---|---|
 | `/` | The event landing page — poster details, highlights, pricing, FAQ |
 | `/register` | Pass selection, guest details, Razorpay checkout |
-| `/ticket/[token]` | The issued pass with its QR code |
+| `/ticket/[token]` | The issued pass with its QR code, and a downloadable copy |
+| `/find` | Ticket recovery — email + phone brings a lost pass back |
 | `/admin` | Organiser dashboard: revenue, bookings, CSV export |
 | `/admin/scan` | Gate check-in — scans QR codes with the phone camera |
 | `/contact` | Contact Us — Instagram, email, WhatsApp, phone, venue |
@@ -40,7 +41,14 @@ connection string. It looks like `postgresql://user:pass@host/db?sslmode=require
 2. Go to **Settings → API Keys** and generate a key pair.
 3. Start with the **test** keys (`rzp_test_…`) so you can practise without real money.
 
-### 4. Set up email (optional but recommended)
+### 4. Set up email (genuinely optional)
+
+Guests download their pass as an image at checkout, and recover a lost one at
+`/find` using the email and mobile number they booked with. Email is a
+convenience on top of that, not the delivery mechanism — the site is fully
+usable without it, and without a domain.
+
+If you do want it:
 
 Sign up at [resend.com](https://resend.com) and create an API key. Without this the site still
 works — buyers just won't get a confirmation email, though their ticket page still loads and the

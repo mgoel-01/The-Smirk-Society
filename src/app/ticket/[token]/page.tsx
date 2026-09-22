@@ -195,19 +195,56 @@ export default async function TicketPage({
           </div>
         )}
 
+        {/* Saving the pass is the primary action: there is no confirmation
+            email, so this image is the guest's copy of their ticket. */}
+        <a
+          href={`/ticket/${ticket.token}/download`}
+          className="mt-6 flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 px-6 py-4 text-center text-base font-semibold text-white shadow-lg shadow-rose-900/40 transition-all hover:-translate-y-0.5"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
+            <path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17" />
+          </svg>
+          Download your pass
+        </a>
+
         <a
           href={calendarUrl()}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 block rounded-full border border-gold-600/45 px-6 py-3.5 text-center text-sm font-medium text-gold-400 transition-all hover:-translate-y-0.5 hover:bg-gold-500/8"
+          className="mt-3 block rounded-full border border-gold-600/45 px-6 py-3.5 text-center text-sm font-medium text-gold-400 transition-all hover:-translate-y-0.5 hover:bg-gold-500/8"
         >
           Add to Google Calendar
         </a>
 
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted">
-          Screenshot this page so you have it offline. Keep the QR private —
-          anyone holding it can use your entry, and each pass scans only once.
-        </p>
+        <div className="mt-6 rounded-2xl border border-gold-600/25 bg-night-800/50 p-5">
+          <p className="text-xs font-semibold text-gold-400">
+            Save your pass now
+          </p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            Download it to your phone — that image is your entry, and you will
+            not need this page again. Lost it? Recover it any time at{" "}
+            <Link
+              href="/find"
+              className="text-gold-500 underline underline-offset-2"
+            >
+              Find my pass
+            </Link>
+            , using the email and phone number you booked with.
+          </p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            Keep the QR private — anyone holding it can use your entry, and
+            each pass scans only once.
+          </p>
+        </div>
 
         <Link
           href="/"
