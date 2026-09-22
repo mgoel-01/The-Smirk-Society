@@ -3,7 +3,7 @@
 Work through these in order. Steps 1–4 get a live URL you can hand to Razorpay
 for website verification. Steps 5–7 turn on real payments.
 
-**Never commit secrets.** Everything below goes into Vercel's environment
+**Never commit secrets.** Everything below goes into Netlify's environment
 variable settings, not into a file in this repo.
 
 ---
@@ -38,15 +38,30 @@ git branch -M main
 git push -u origin main
 ```
 
-## 4. Deploy — Vercel
+## 4. Deploy — Netlify
 
-1. Sign up at [vercel.com](https://vercel.com) with the business email.
-2. **Add New → Project** and import the repository.
-3. Framework preset: Next.js. Leave build settings alone.
-4. Add every environment variable from the table below.
+Netlify's free tier permits commercial use, which is why we are using it rather
+than Vercel's Hobby plan (that one is personal, non-commercial only).
+
+1. Sign up at [netlify.com](https://netlify.com) with the business email.
+2. **Add new site → Import an existing project** and pick the repository.
+3. Build settings are read from `netlify.toml` — leave them as detected.
+4. Add every environment variable from the table below **before** the first
+   deploy, under **Site configuration → Environment variables**.
 5. Deploy.
 
-You now have a live URL. **Give this to Razorpay for website verification.**
+You now have a live URL like `https://<something>.netlify.app`.
+**Give this to Razorpay for website verification.**
+
+> If the build fails on the Next.js version, check **Site configuration → Build
+> & deploy → Environment** and confirm `NODE_VERSION` is 22 or newer.
+
+### Checking the admin gate after the first deploy
+
+Open `/admin` in a private window without signing in. You must land on
+`/admin/login`. The app enforces this itself, so it holds even if Netlify's
+Next.js runtime does not run `src/proxy.ts` — but confirm it once after
+deploying, because it guards every guest's contact details.
 
 ### Environment variables
 
@@ -69,8 +84,8 @@ Start with Razorpay **test** keys (`rzp_test_…`). No KYC needed for those.
 
 ## 5. Custom domain
 
-Vercel → **Settings → Domains → Add**, then paste the record it shows into your
-registrar's DNS. Afterwards update `NEXT_PUBLIC_SITE_URL` to the new address and
+Netlify → **Domain management → Add a domain**, then paste the records it shows
+into Hostinger's DNS panel. Afterwards update `NEXT_PUBLIC_SITE_URL` to the new address and
 redeploy — **ticket links in emails are built from it**, so a stale value sends
 guests to the wrong place.
 

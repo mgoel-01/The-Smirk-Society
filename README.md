@@ -94,10 +94,13 @@ Complete a booking, confirm the ticket page loads and the email arrives, then sc
 ## Deploying
 
 1. Push this folder to a GitHub repository.
-2. Import it at [vercel.com](https://vercel.com).
-3. Add every variable from `.env` into **Settings → Environment Variables**.
-4. Set `NEXT_PUBLIC_SITE_URL` to your real domain (e.g. `https://smirknraas.com`) — ticket links
-   in emails are built from it.
+2. Import it at [netlify.com](https://netlify.com) — its free tier allows
+   commercial use, unlike Vercel's Hobby plan.
+3. Add every variable from `.env` into **Site configuration → Environment
+   variables**.
+4. Set `NEXT_PUBLIC_SITE_URL` to your real domain — ticket links in emails are built from it.
+
+See [DEPLOY.md](DEPLOY.md) for the full step-by-step.
 5. Deploy.
 
 ### Then add the webhook — do not skip this
@@ -113,7 +116,7 @@ the webhook is what still issues their ticket.
 
 ### Going live
 
-Swap the `rzp_test_…` keys for `rzp_live_…` keys in Vercel's environment variables (both
+Swap the `rzp_test_…` keys for `rzp_live_…` keys in Netlify's environment variables (both
 `RAZORPAY_KEY_ID` and `NEXT_PUBLIC_RAZORPAY_KEY_ID`), and redeploy. Razorpay requires the
 `/terms`, `/privacy`, `/refunds` and `/contact` pages to be publicly reachable before it activates
 live mode — they already are.
@@ -182,13 +185,13 @@ DNS record types, so nothing conflicts.
 
 | Purpose | Record | Set up in |
 |---|---|---|
-| Website | A / CNAME | Vercel → Settings → Domains |
+| Website | A / CNAME | Netlify → Domain management |
 | Sending ticket emails | TXT (SPF + DKIM) | Resend → Domains |
 | Receiving replies (optional) | MX | Your mailbox provider |
 
-### 1. Point the website at Vercel
+### 1. Point the website at Netlify
 
-In Vercel, **Settings → Domains → Add**. It shows the exact A/CNAME record to
+In Netlify, **Domain management → Add a domain**. It shows the exact records to
 paste into your registrar. Then set `NEXT_PUBLIC_SITE_URL` to the new address
 with no trailing slash — every ticket link in every email is built from it, so
 this must be right before you sell anything.

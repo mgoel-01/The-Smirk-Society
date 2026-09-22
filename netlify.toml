@@ -1,0 +1,24 @@
+# Netlify build configuration.
+#
+# Netlify detects Next.js and installs @netlify/plugin-nextjs automatically,
+# which handles SSR, API routes and static assets. The settings here just make
+# the build explicit rather than inferred.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Match the Node version used locally. Netlify's default can lag behind what
+  # Next 16 expects.
+  NODE_VERSION = "22"
+  # Prisma downloads its engines at install time; keep that quiet in CI logs.
+  PRISMA_HIDE_UPDATE_MESSAGE = "true"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Security headers are set in next.config.ts so they apply identically in
+# local dev, on Vercel and here. They are deliberately NOT duplicated in this
+# file — two sources of truth for CSP is how a stale header silently blocks
+# Razorpay's checkout months later.
