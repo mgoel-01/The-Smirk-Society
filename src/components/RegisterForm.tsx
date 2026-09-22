@@ -406,7 +406,7 @@ export function RegisterForm({
               setError(null);
             }}
             disabled={busy}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-rose-500"
+            className="mt-0.5 h-5 w-5 shrink-0 accent-rose-500"
           />
           <span>
             I confirm my details are correct and I accept that passes are{" "}

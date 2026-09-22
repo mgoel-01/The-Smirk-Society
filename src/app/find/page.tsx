@@ -62,7 +62,7 @@ export default function FindTicketPage() {
           </Link>
           <Link
             href="/"
-            className="text-sm text-cream/70 transition-colors hover:text-gold-400"
+            className="-mr-2 px-2 py-2 text-sm text-cream/70 transition-colors hover:text-gold-400"
           >
             &larr; Back
           </Link>

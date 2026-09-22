@@ -70,19 +70,19 @@ function Nav() {
         <div className="flex items-center gap-1 sm:gap-5">
           <a
             href="#passes"
-            className="hidden px-2 text-sm text-cream/75 transition-colors hover:text-gold-400 sm:block"
+            className="hidden px-2 py-2 text-sm text-cream/75 transition-colors hover:text-gold-400 sm:block"
           >
             Passes
           </a>
           <a
             href="#details"
-            className="hidden px-2 text-sm text-cream/75 transition-colors hover:text-gold-400 sm:block"
+            className="hidden px-2 py-2 text-sm text-cream/75 transition-colors hover:text-gold-400 sm:block"
           >
             Details
           </a>
           <a
             href="#faq"
-            className="hidden px-2 text-sm text-cream/75 transition-colors hover:text-gold-400 sm:block"
+            className="hidden px-2 py-2 text-sm text-cream/75 transition-colors hover:text-gold-400 sm:block"
           >
             FAQ
           </a>
@@ -584,19 +584,19 @@ function Footer() {
             &copy; {EVENT.year} {EVENT.host}. All rights reserved.
           </p>
           <div className="flex gap-5">
-            <Link href="/find" className="transition-colors hover:text-gold-400">
+            <Link href="/find" className="inline-block py-2 transition-colors hover:text-gold-400">
               Find my pass
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-gold-400">
+            <Link href="/contact" className="inline-block py-2 transition-colors hover:text-gold-400">
               Contact
             </Link>
-            <Link href="/terms" className="transition-colors hover:text-gold-400">
+            <Link href="/terms" className="inline-block py-2 transition-colors hover:text-gold-400">
               Terms
             </Link>
-            <Link href="/privacy" className="transition-colors hover:text-gold-400">
+            <Link href="/privacy" className="inline-block py-2 transition-colors hover:text-gold-400">
               Privacy
             </Link>
-            <Link href="/refunds" className="transition-colors hover:text-gold-400">
+            <Link href="/refunds" className="inline-block py-2 transition-colors hover:text-gold-400">
               Refunds
             </Link>
           </div>
