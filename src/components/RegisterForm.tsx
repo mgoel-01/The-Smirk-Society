@@ -240,7 +240,7 @@ export function RegisterForm({
           Step 1 · Choose your pass
         </legend>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {PASS_LIST.map((option) => {
             const selected = option.id === passType;
             return (

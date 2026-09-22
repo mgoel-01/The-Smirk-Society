@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 // Availability must be live, never served from a cache.
 export const dynamic = "force-dynamic";
 
-const VALID_PASSES: PassType[] = ["SINGLE", "COUPLE", "GROUP4"];
+const VALID_PASSES: PassType[] = ["SINGLE", "COUPLE", "GROUP4", "CHILD"];
 
 export default async function RegisterPage({
   searchParams,

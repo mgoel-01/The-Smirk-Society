@@ -45,12 +45,22 @@ export const PASSES: Record<PassType, PassDefinition> = {
     badge: "Best value",
     blurb: "Entry for four, at ₹700 per person.",
   },
+  CHILD: {
+    id: "CHILD",
+    name: "Child Pass",
+    pricePaise: 45_000, // ₹450
+    seats: 1,
+    perPersonPaise: 45_000,
+    badge: "Ages 6-12",
+    blurb: "Entry for one child aged 6 to 12.",
+  },
 };
 
 export const PASS_LIST: PassDefinition[] = [
   PASSES.SINGLE,
   PASSES.COUPLE,
   PASSES.GROUP4,
+  PASSES.CHILD,
 ];
 
 /** Guard rails: one booking cannot monopolise the venue. */

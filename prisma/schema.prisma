@@ -21,6 +21,7 @@ enum PassType {
   SINGLE
   COUPLE
   GROUP4
+  CHILD
 }
 
 enum RegistrationStatus {

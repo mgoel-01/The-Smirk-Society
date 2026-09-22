@@ -44,7 +44,10 @@ export const phoneSchema = z
       .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number."),
   );
 
-export const passTypeSchema = z.enum(["SINGLE", "COUPLE", "GROUP4"]);
+export const passTypeSchema = z.enum(
+  ["SINGLE", "COUPLE", "GROUP4", "CHILD"],
+  { message: "Please choose one of the available passes." },
+);
 
 export const createOrderSchema = z.object({
   fullName: nameSchema,

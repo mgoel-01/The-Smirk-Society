@@ -302,11 +302,12 @@ function Passes() {
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">
             The bigger the group, the less each person pays. Every pass includes
             dandiya sticks, entry to all stalls and the open dance floor.
+            Children under 6 come in free.
           </p>
           <Divider className="mx-auto mt-5 max-w-xs" />
         </div>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {PASS_LIST.map((pass) => {
             const featured = pass.id === "COUPLE";
             return (
@@ -314,7 +315,7 @@ function Passes() {
                 key={pass.id}
                 className={`relative flex flex-col rounded-3xl border p-7 transition-all duration-300 hover:-translate-y-1.5 ${
                   featured
-                    ? "border-gold-600/55 bg-gradient-to-b from-night-700/90 to-night-800/70 card-glow lg:-my-3 lg:py-10"
+                    ? "border-gold-600/55 bg-gradient-to-b from-night-700/90 to-night-800/70 card-glow"
                     : "border-night-500/70 bg-night-800/55"
                 }`}
               >
@@ -485,7 +486,7 @@ function Faq() {
 
     {
       q: "Are children allowed?",
-      a: "Absolutely — this is a family event. Children under 5 enter free with a paying adult; anyone older needs their own pass.",
+      a: "Absolutely — this is a family event. Children under 6 enter free with a paying adult. Ages 6 to 12 need a Child Pass at ₹450. From 13 onwards a full pass is needed.",
     },
   ];
 

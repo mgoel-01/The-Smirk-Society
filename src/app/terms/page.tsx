@@ -76,8 +76,9 @@ export default function TermsPage() {
             The venue and organisers may conduct security checks at the entrance.
           </li>
           <li>
-            Children under 5 enter free with a paying adult. Anyone older needs
-            their own pass.
+            Children under 6 enter free with a paying adult. Ages 6 to 12 need a
+            Child Pass. From 13 onwards a full pass is required. We may ask for
+            proof of age at the gate.
           </li>
         </ul>
       </Section>
