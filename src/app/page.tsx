@@ -22,6 +22,7 @@ function EventJsonLd() {
     name: `${EVENT.name} ${EVENT.year}`,
     description: EVENT.tagline,
     startDate: EVENT.startsAt.toISOString(),
+    endDate: EVENT.endsAt.toISOString(),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     location: {
@@ -173,7 +174,7 @@ function Hero() {
           {[
             { Icon: CalendarIcon, term: "Date", value: EVENT.dateLabel, sub: EVENT.dayLabel },
             { Icon: PinIcon, term: "Venue", value: EVENT.venue, sub: EVENT.venueArea },
-            { Icon: ClockIcon, term: "Time", value: EVENT.timeLabel, sub: "Till late" },
+            { Icon: ClockIcon, term: "Time", value: EVENT.timeLabel, sub: "Five hours of garba" },
           ].map(({ Icon, term, value, sub }) => (
             <div
               key={term}
@@ -400,7 +401,7 @@ function Details() {
                   term: "Date",
                   value: `${EVENT.dayLabel}, ${EVENT.dateLabel}`,
                 },
-                { Icon: ClockIcon, term: "Doors open", value: EVENT.timeLabel },
+                { Icon: ClockIcon, term: "Timings", value: EVENT.timeLabel },
                 {
                   Icon: PinIcon,
                   term: "Venue",
@@ -443,7 +444,7 @@ function Details() {
                 ["Dress code", "Traditional or ethnic wear — chaniya choli, kurta, whatever makes you want to twirl."],
                 ["Dandiya sticks", "Provided free at the entrance. Bring your own if you have a favourite pair."],
                 ["Entry", "Show the QR code from your email at the gate. Each pass scans once."],
-                ["Arrive early", "Gates open at 6 PM. The first garba round starts soon after — come early for the best floor."],
+                ["Arrive early", "Gates open at 5 PM and the night runs to 10 PM. The first garba round starts soon after doors — come early for the best floor."],
                 ["Parking", "On-site parking is available at Chancellor Club."],
               ].map(([term, detail]) => (
                 <li key={term} className="border-l-2 border-rose-600/45 pl-4">

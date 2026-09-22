@@ -18,9 +18,11 @@ export const EVENT = {
   blurb: "Dance · Music · Food · Shopping and so much more!",
   dateLabel: "17th October 2026",
   dayLabel: "Saturday",
-  timeLabel: "6:00 PM onwards",
-  /** IST is UTC+5:30 — stored as an absolute instant for the countdown. */
-  startsAt: new Date("2026-10-17T18:00:00+05:30"),
+  timeLabel: "5:00 PM to 10:00 PM",
+  /** IST is UTC+5:30 — stored as absolute instants for the countdown and
+   *  for the "add to calendar" link. */
+  startsAt: new Date("2026-10-17T17:00:00+05:30"),
+  endsAt: new Date("2026-10-17T22:00:00+05:30"),
   venue: "Chancellor Club",
   venueArea: "Chiranjiv Vihar, Ghaziabad",
   mapsQuery: "Chancellor Club, Chiranjiv Vihar, Ghaziabad",

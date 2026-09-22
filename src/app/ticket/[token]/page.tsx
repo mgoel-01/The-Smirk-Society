@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 function calendarUrl(): string {
   const start = EVENT.startsAt;
-  const end = new Date(start.getTime() + 6 * 60 * 60 * 1000);
+  const end = EVENT.endsAt;
   const stamp = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
   const params = new URLSearchParams({
     action: "TEMPLATE",

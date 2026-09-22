@@ -1,7 +1,7 @@
 # Smirk'N'Raas 2026 — event site & ticketing
 
 Registration and ticketing site for **Ghaziabad's Biggest Dandiya Night**, presented by The Smirk Society.
-17th October 2026 · Chancellor Club, Chiranjiv Vihar · 6 PM onwards.
+17th October 2026 · Chancellor Club, Chiranjiv Vihar · 5 PM to 10 PM.
 
 Guests pick a pass, pay through Razorpay, and get a QR ticket by email. Staff scan that QR at the gate.
 
