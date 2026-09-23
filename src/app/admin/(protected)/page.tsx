@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PASSES, VENUE_CAPACITY, formatInr } from "@/lib/pricing";
 import { EVENT } from "@/lib/event";
 import { AdminActions } from "@/components/AdminActions";
+import { unpaidBookings } from "@/lib/booking";
 
 export const metadata: Metadata = {
   title: "Organiser dashboard",
@@ -29,6 +30,12 @@ export default async function AdminDashboard() {
     }),
     prisma.ticket.count({ where: { checkedInAt: { not: null } } }),
   ]);
+
+  // People who filled in the form and did not pay. They chose a pass and
+  // typed their details, so they are the warmest leads the event will get —
+  // and until now they were invisible here.
+  const unpaid = await unpaidBookings(50);
+  const unpaidValue = unpaid.reduce((sum, r) => sum + r.amountPaise, 0);
 
   // Only flag undelivered emails when email is actually switched on;
   // otherwise every row would carry a warning that means nothing.
@@ -61,6 +68,12 @@ export default async function AdminDashboard() {
             </h1>
           </div>
           <div className="flex items-center gap-2.5">
+            <Link
+              href="/admin/issue"
+              className="rounded-full border border-gold-600/45 px-5 py-2.5 text-sm text-gold-400 transition-colors hover:bg-gold-500/8"
+            >
+              Issue a pass
+            </Link>
             <Link
               href="/admin/scan"
               className="rounded-full bg-rose-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-400"
@@ -200,6 +213,75 @@ export default async function AdminDashboard() {
           Showing the 60 most recent paid bookings. Use “Download CSV” for the
           full list.
         </p>
+
+        {unpaid.length > 0 && (
+          <>
+            <div className="mt-10 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-display text-xl text-cream">
+                Didn&rsquo;t finish paying
+              </h2>
+              <p className="text-sm text-amber-300">
+                {unpaid.length} {unpaid.length === 1 ? "person" : "people"} ·{" "}
+                {formatInr(unpaidValue)} not collected
+              </p>
+            </div>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+              They picked a pass and entered their details, then stopped at
+              payment. A short message often recovers the sale — tap a number to
+              open WhatsApp.
+            </p>
+
+            <div className="mt-4 overflow-x-auto rounded-2xl border border-amber-400/25">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="bg-night-800/80 text-[10px] uppercase tracking-[0.14em] text-muted">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Name</th>
+                    <th className="px-4 py-3 font-medium">Contact</th>
+                    <th className="px-4 py-3 font-medium">Wanted</th>
+                    <th className="px-4 py-3 text-right font-medium">Value</th>
+                    <th className="px-4 py-3 font-medium">When</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-night-600/50 bg-night-900/40">
+                  {unpaid.map((r) => (
+                    <tr key={r.id} className="hover:bg-night-800/45">
+                      <td className="px-4 py-3 text-cream">{r.fullName}</td>
+                      <td className="px-4 py-3 text-xs">
+                        <a
+                          href={`https://wa.me/91${r.phone}?text=${encodeURIComponent(
+                            `Hi ${r.fullName.split(" ")[0]}! We noticed your booking for ${EVENT.name} ${EVENT.year} didn't go through. Can we help you complete it?`,
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-emerald-400 underline underline-offset-2"
+                        >
+                          {r.phone}
+                        </a>
+                        <div className="text-muted">{r.email}</div>
+                      </td>
+                      <td className="px-4 py-3 text-cream/80">
+                        {PASSES[r.passType].name}
+                        <span className="text-muted"> × {r.quantity}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-amber-300">
+                        {formatInr(r.amountPaise)}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted">
+                        {r.createdAt.toLocaleString("en-IN", {
+                          timeZone: "Asia/Kolkata",
+                          day: "numeric",
+                          month: "short",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

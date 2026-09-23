@@ -1,4 +1,5 @@
 import "server-only";
+import crypto from "node:crypto";
 import { Prisma, type PassType } from "@prisma/client";
 import { prisma } from "./prisma";
 import { PASSES, VENUE_CAPACITY, quoteFor } from "./pricing";
@@ -223,5 +224,94 @@ export async function markFailed(
   await prisma.registration.updateMany({
     where: { razorpayOrderId, status: "PENDING" },
     data: { status: "FAILED", failureReason: reason.slice(0, 255) },
+  });
+}
+
+/**
+ * Issues a pass for someone who paid the organiser directly — cash at the
+ * door, a UPI transfer to her personally, a comped guest.
+ *
+ * Deliberately does NOT go through `confirmRegistration`. That function's job
+ * is to turn a *verified Razorpay payment* into tickets, and its guard rails
+ * assume one exists. Manual passes have no payment to verify, so they get
+ * their own path rather than loosening the one that protects real money.
+ *
+ * The synthetic `manual_…` order id keeps the column's uniqueness intact and
+ * makes these bookings obvious in an export. `paymentMethod` records how the
+ * money actually arrived.
+ */
+export async function createManualBooking(input: {
+  fullName: string;
+  email: string;
+  phone: string;
+  passType: PassType;
+  quantity: number;
+  groupSize?: number;
+  paymentMethod: string;
+  issuedBy: string;
+}) {
+  const quote = quoteFor(input.passType, input.quantity, input.groupSize);
+
+  // Manual passes still occupy seats, so they respect capacity like any other.
+  await releaseStalePending();
+  const remaining = await seatsRemaining();
+  if (quote.seats > remaining) {
+    throw new Error(
+      `Only ${remaining} ${remaining === 1 ? "spot is" : "spots are"} left — cannot issue ${quote.seats}.`,
+    );
+  }
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const registration = await prisma.registration.create({
+        data: {
+          bookingCode: newBookingCode(),
+          fullName: input.fullName,
+          email: input.email,
+          phone: input.phone,
+          passType: input.passType,
+          quantity: quote.quantity,
+          seats: quote.seats,
+          amountPaise: quote.amountPaise,
+          status: "PAID",
+          paidAt: new Date(),
+          paymentMethod: input.paymentMethod,
+          razorpayOrderId: `manual_${crypto.randomUUID()}`,
+          failureReason: `Issued manually by ${input.issuedBy}`,
+        },
+      });
+
+      await prisma.ticket.createMany({
+        data: Array.from({ length: quote.quantity }, () => ({
+          registrationId: registration.id,
+          token: newTicketToken(),
+          seats: quote.seatsPerPass,
+        })),
+      });
+
+      const tickets = await prisma.ticket.findMany({
+        where: { registrationId: registration.id },
+        orderBy: { createdAt: "asc" },
+        select: { token: true, seats: true },
+      });
+
+      return { registration, tickets, quote };
+    } catch (err) {
+      const isCodeCollision =
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002" &&
+        String(err.meta?.target ?? "").includes("bookingCode");
+      if (!isCodeCollision) throw err;
+    }
+  }
+  throw new Error("Could not allocate a unique booking code.");
+}
+
+/** Bookings that were started but never paid — warm leads worth chasing. */
+export async function unpaidBookings(limit = 50) {
+  return prisma.registration.findMany({
+    where: { status: { in: ["PENDING", "FAILED"] } },
+    orderBy: { createdAt: "desc" },
+    take: limit,
   });
 }
