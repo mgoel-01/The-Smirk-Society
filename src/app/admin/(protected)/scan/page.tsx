@@ -41,6 +41,7 @@ type ScanResult = {
   name?: string;
   booking?: string;
   passName?: string;
+  passType?: "SINGLE" | "COUPLE" | "GROUP4" | "CHILD";
   seats?: number;
   checkedInAt?: string | null;
 };
@@ -282,6 +283,15 @@ export default function ScanPage() {
               <p className="text-sm text-muted">
                 {result.passName}
                 {result.seats ? ` · admits ${result.seats}` : ""}
+              </p>
+            )}
+
+            {/* A child pass costs far less than an adult one, so the gate has
+                to actually look at who is standing there. The pass name alone
+                is too easy to skim past in a queue. */}
+            {result.passType === "CHILD" && result.status !== "invalid" && (
+              <p className="mt-3 rounded-xl border-2 border-amber-400/70 bg-amber-400/15 px-4 py-3 text-base font-bold uppercase tracking-wide text-amber-200">
+                Child pass — check age 6 to 12
               </p>
             )}
             {result.booking && (

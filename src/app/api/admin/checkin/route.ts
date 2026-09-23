@@ -101,6 +101,7 @@ export async function POST(request: Request) {
       name: ticket.registration.fullName,
       booking: ticket.registration.bookingCode,
       passName: pass.name,
+      passType: ticket.registration.passType,
       seats: ticket.seats,
       checkedInAt: current?.checkedInAt?.toISOString() ?? null,
     });
@@ -112,6 +113,7 @@ export async function POST(request: Request) {
     name: ticket.registration.fullName,
     booking: ticket.registration.bookingCode,
     passName: pass.name,
+    passType: ticket.registration.passType,
     seats: ticket.seats,
     checkedInAt: new Date().toISOString(),
   });
