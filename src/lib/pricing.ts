@@ -63,6 +63,13 @@ export const PASS_LIST: PassDefinition[] = [
   PASSES.CHILD,
 ];
 
+/**
+ * Only tell visitors how many spots are left once it is genuinely scarce.
+ * Above this, the number is withheld entirely rather than merely hidden —
+ * see the note in src/app/register/page.tsx.
+ */
+export const LOW_STOCK_THRESHOLD = 40;
+
 /** Guard rails: one booking cannot monopolise the venue. */
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 10;

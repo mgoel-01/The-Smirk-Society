@@ -19,12 +19,6 @@ declare global {
 
 const RAZORPAY_SRC = "https://checkout.razorpay.com/v1/checkout.js";
 
-/**
- * Only mention remaining spots once they are genuinely scarce. Showing it too
- * early reads as manufactured urgency, which is worse than saying nothing.
- */
-const LOW_STOCK_THRESHOLD = 40;
-
 /** Loads the checkout bundle once, on demand, and resolves when it is ready. */
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -53,10 +47,17 @@ type Status = "idle" | "creating" | "paying" | "verifying";
 
 export function RegisterForm({
   initialPass,
-  seatsRemaining,
+  soldOut,
+  spotsLeft,
 }: {
   initialPass: PassType;
-  seatsRemaining: number | null;
+  soldOut: boolean;
+  /**
+   * Only set when few enough spots remain that we mean to show the figure.
+   * Null the rest of the time, so the exact count is never serialised into
+   * the page where anyone could read off how many passes have sold.
+   */
+  spotsLeft: number | null;
 }) {
   const router = useRouter();
 
@@ -81,8 +82,6 @@ export function RegisterForm({
     }),
     [pass, quantity],
   );
-
-  const soldOut = seatsRemaining !== null && seatsRemaining <= 0;
 
   function validateLocally(): string | null {
     if (fullName.trim().length < 2) return "Please enter your full name.";
@@ -449,9 +448,9 @@ export function RegisterForm({
           Payments are processed by Razorpay. We never see your card or UPI details.
         </p>
 
-        {seatsRemaining !== null && seatsRemaining <= LOW_STOCK_THRESHOLD && (
+        {spotsLeft !== null && (
           <p className="mt-2.5 text-center text-xs text-rose-300">
-            Only {seatsRemaining} {seatsRemaining === 1 ? "spot" : "spots"} left!
+            Only {spotsLeft} {spotsLeft === 1 ? "spot" : "spots"} left!
           </p>
         )}
       </div>

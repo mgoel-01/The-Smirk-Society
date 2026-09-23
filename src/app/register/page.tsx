@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { PassType } from "@prisma/client";
 import { EVENT } from "@/lib/event";
 import { seatsRemaining } from "@/lib/booking";
+import { LOW_STOCK_THRESHOLD } from "@/lib/pricing";
 import { RegisterForm } from "@/components/RegisterForm";
 import { Divider } from "@/components/Decor";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -37,6 +38,17 @@ export default async function RegisterPage({
   } catch (err) {
     console.error("[register] Could not read remaining capacity:", err);
   }
+
+  // Anything handed to a client component is serialised into the page, so a
+  // visitor could read the exact figure from the HTML and subtract it from the
+  // published capacity to work out how many passes have sold. That is the
+  // organiser's business, not the public's, so the precise number only leaves
+  // the server once it is low enough that we intend to display it anyway.
+  const soldOut = remaining !== null && remaining <= 0;
+  const spotsLeft =
+    remaining !== null && remaining > 0 && remaining <= LOW_STOCK_THRESHOLD
+      ? remaining
+      : null;
 
   return (
     <div className="min-h-screen festival-haze">
@@ -86,7 +98,11 @@ export default async function RegisterPage({
         </div>
 
         <div className="mt-10">
-          <RegisterForm initialPass={initialPass} seatsRemaining={remaining} />
+          <RegisterForm
+            initialPass={initialPass}
+            soldOut={soldOut}
+            spotsLeft={spotsLeft}
+          />
         </div>
       </main>
       <WhatsAppButton message="Hi! I need help booking a pass for Smirk'N'Raas 2026." />
