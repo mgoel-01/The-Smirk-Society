@@ -60,7 +60,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unable to process." }, { status: 400 });
   }
 
-  const quote = quoteFor(input.passType, input.quantity);
+  // quoteFor enforces the rules Zod cannot: that a group falls inside its
+  // allowed range, that a fixed-size pass is not handed a group size, and that
+  // one booking does not cover an absurd number of people. Those are bad
+  // requests, not server faults, so answer 400 rather than letting it throw.
+  let quote;
+  try {
+    quote = quoteFor(input.passType, input.quantity, input.groupSize);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Please check the pass options you chose.",
+      },
+      { status: 400 },
+    );
+  }
 
   await releaseStalePending();
   const remaining = await seatsRemaining();
@@ -90,6 +107,7 @@ export async function POST(request: Request) {
         passType: quote.pass.id,
         quantity: String(quote.quantity),
         seats: String(quote.seats),
+        seatsPerPass: String(quote.seatsPerPass),
       },
     });
 
@@ -99,6 +117,7 @@ export async function POST(request: Request) {
       phone: input.phone,
       passType: input.passType,
       quantity: input.quantity,
+      groupSize: input.groupSize,
       razorpayOrderId: order.id,
       ipHash: hashIp(ip),
       userAgent: request.headers.get("user-agent") ?? undefined,

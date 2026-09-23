@@ -62,6 +62,7 @@ export type PendingBooking = {
   phone: string;
   passType: PassType;
   quantity: number;
+  groupSize?: number;
   razorpayOrderId: string;
   ipHash?: string;
   userAgent?: string;
@@ -72,7 +73,7 @@ export type PendingBooking = {
  * order. Retries once on the (vanishingly unlikely) booking-code collision.
  */
 export async function createPendingRegistration(input: PendingBooking) {
-  const quote = quoteFor(input.passType, input.quantity);
+  const quote = quoteFor(input.passType, input.quantity, input.groupSize);
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -167,12 +168,19 @@ export async function confirmRegistration(params: {
   }
 
   // We won the race — mint one ticket per pass purchased.
+  //
+  // Seats per ticket come from the booking, not the pass definition: a group
+  // pass covers however many people the buyer paid for, so reading the
+  // definition's default would hand a group of ten a ticket admitting four.
   const pass = PASSES[registration.passType];
+  const seatsPerTicket = Math.round(
+    registration.seats / registration.quantity,
+  );
   await prisma.ticket.createMany({
     data: Array.from({ length: registration.quantity }, () => ({
       registrationId: registration.id,
       token: newTicketToken(),
-      seats: pass.seats,
+      seats: seatsPerTicket,
     })),
   });
 

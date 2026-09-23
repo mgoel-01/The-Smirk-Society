@@ -16,6 +16,11 @@ export type PassDefinition = {
   perPersonPaise: number;
   badge?: string;
   blurb: string;
+  /**
+   * When set, the buyer chooses how many people the pass covers and the price
+   * scales per head. Without it the pass has a fixed size.
+   */
+  sizeRange?: { min: number; max: number };
 };
 
 export const PASSES: Record<PassType, PassDefinition> = {
@@ -38,12 +43,13 @@ export const PASSES: Record<PassType, PassDefinition> = {
   },
   GROUP4: {
     id: "GROUP4",
-    name: "Group of Four",
-    pricePaise: 280_000, // ₹2,800
+    name: "Group of 4 or More",
+    pricePaise: 280_000, // ₹2,800 for the minimum group of four
     seats: 4,
     perPersonPaise: 70_000, // ₹700 each
     badge: "Best value",
-    blurb: "Entry for four, at ₹700 per person.",
+    blurb: "Four or more, at ₹700 per person.",
+    sizeRange: { min: 4, max: 20 },
   },
   CHILD: {
     id: "CHILD",
@@ -73,6 +79,8 @@ export const LOW_STOCK_THRESHOLD = 40;
 /** Guard rails: one booking cannot monopolise the venue. */
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 10;
+/** Total people one booking may cover, across quantity and group size. */
+export const MAX_SEATS_PER_BOOKING = 40;
 
 /**
  * Total capacity in people. Orders are refused once confirmed seats hit this.
@@ -90,7 +98,11 @@ function parseCapacity(raw: string | undefined): number {
 
 export const VENUE_CAPACITY = parseCapacity(process.env.VENUE_CAPACITY);
 
-export function quoteFor(passType: PassType, quantity: number) {
+export function quoteFor(
+  passType: PassType,
+  quantity: number,
+  groupSize?: number,
+) {
   const pass = PASSES[passType];
   if (!pass) throw new Error(`Unknown pass type: ${passType}`);
   if (!Number.isInteger(quantity)) {
@@ -101,11 +113,41 @@ export function quoteFor(passType: PassType, quantity: number) {
       `Quantity must be between ${MIN_QUANTITY} and ${MAX_QUANTITY}.`,
     );
   }
+
+  // How many people a single pass of this type covers.
+  let seatsPerPass = pass.seats;
+  let amountPerPass = pass.pricePaise;
+
+  if (pass.sizeRange) {
+    const size = groupSize ?? pass.seats;
+    if (!Number.isInteger(size)) {
+      throw new Error("Group size must be a whole number.");
+    }
+    if (size < pass.sizeRange.min || size > pass.sizeRange.max) {
+      throw new Error(
+        `A group must be between ${pass.sizeRange.min} and ${pass.sizeRange.max} people.`,
+      );
+    }
+    seatsPerPass = size;
+    amountPerPass = size * pass.perPersonPaise;
+  } else if (groupSize !== undefined && groupSize !== pass.seats) {
+    // A fixed-size pass must never be talked into covering more people.
+    throw new Error("This pass covers a fixed number of people.");
+  }
+
+  const seats = seatsPerPass * quantity;
+  if (seats > MAX_SEATS_PER_BOOKING) {
+    throw new Error(
+      `One booking can cover at most ${MAX_SEATS_PER_BOOKING} people. Please split it.`,
+    );
+  }
+
   return {
     pass,
     quantity,
-    seats: pass.seats * quantity,
-    amountPaise: pass.pricePaise * quantity,
+    seatsPerPass,
+    seats,
+    amountPaise: amountPerPass * quantity,
   };
 }
 

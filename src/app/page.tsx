@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { EVENT, HIGHLIGHTS, mapsUrl } from "@/lib/event";
-import { PASS_LIST, formatInr } from "@/lib/pricing";
+import { PASS_LIST, PASSES, formatInr } from "@/lib/pricing";
 import { Bokeh, Divider, StringLights } from "@/components/Decor";
 import { Countdown } from "@/components/Countdown";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -302,7 +302,6 @@ function Passes() {
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">
             The bigger the group, the less each person pays. Every pass includes
             dandiya sticks, entry to all stalls and the open dance floor.
-            Children under 6 come in free.
           </p>
           <Divider className="mx-auto mt-5 max-w-xs" />
         </div>
@@ -331,6 +330,9 @@ function Passes() {
                 <p className="mt-1 text-xs text-muted">{pass.blurb}</p>
 
                 <div className="mt-6 flex items-baseline gap-2">
+                  {pass.sizeRange && (
+                    <span className="text-sm text-muted">from</span>
+                  )}
                   <span className="font-display text-5xl font-bold text-cream">
                     {formatInr(pass.pricePaise)}
                   </span>
@@ -338,14 +340,18 @@ function Passes() {
                 </div>
 
                 <p className="mt-1.5 text-sm text-rose-300">
-                  {pass.seats === 1
-                    ? "Per person"
-                    : `${formatInr(pass.perPersonPaise)} per person · admits ${pass.seats}`}
+                  {pass.sizeRange
+                    ? `${formatInr(pass.perPersonPaise)} per person · ${pass.sizeRange.min} to ${pass.sizeRange.max} people`
+                    : pass.seats === 1
+                      ? "Per person"
+                      : `${formatInr(pass.perPersonPaise)} per person · admits ${pass.seats}`}
                 </p>
 
                 <ul className="mt-6 flex-1 space-y-2.5 border-t border-night-500/60 pt-6 text-sm text-cream/80">
                   {[
-                    `Entry for ${pass.seats} ${pass.seats === 1 ? "person" : "people"}`,
+                    pass.sizeRange
+                      ? `Entry for ${pass.sizeRange.min} or more — you pick the size`
+                      : `Entry for ${pass.seats} ${pass.seats === 1 ? "person" : "people"}`,
                     "Free dandiya sticks",
                     "All food & shopping stalls",
                     "Live band, dhol & DJ",
@@ -373,7 +379,17 @@ function Passes() {
           })}
         </div>
 
-        <p className="mt-8 text-center text-xs text-muted">
+        <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-gold-600/30 bg-night-800/50 px-6 py-5 text-center">
+          <p className="font-display text-lg text-gold-400">
+            Children under 6 enter free
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-cream/80">
+            No pass needed — just bring them along with a paying adult. Ages 6
+            to 12 need a Child Pass at {formatInr(PASSES.CHILD.pricePaise)}.
+          </p>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-muted">
           All prices are inclusive. Passes are limited and sold on a
           first-come basis.
         </p>
@@ -473,7 +489,7 @@ function Faq() {
     },
     {
       q: "What if I book a couple or group pass?",
-      a: "One QR code covers the whole pass. A couple pass admits two people together, a group pass admits four. Everyone should arrive at the gate together.",
+      a: "One QR code covers the whole pass. A couple pass admits two people together, and a group pass admits however many people you chose when booking — anything from 4 to 20. Everyone on that pass should arrive at the gate together.",
     },
     {
       q: "Is my payment secure?",

@@ -30,8 +30,12 @@ export default function TermsPage() {
           {PASS_LIST.map((pass) => (
             <li key={pass.id}>
               <span className="text-cream">{pass.name}</span> —{" "}
-              {formatInr(pass.pricePaise)}, admitting {pass.seats}{" "}
-              {pass.seats === 1 ? "person" : "people"}.
+              {pass.sizeRange
+                ? `${formatInr(pass.perPersonPaise)} per person, for groups of ${pass.sizeRange.min} to ${pass.sizeRange.max}`
+                : `${formatInr(pass.pricePaise)}, admitting ${pass.seats} ${
+                    pass.seats === 1 ? "person" : "people"
+                  }`}
+              .
             </li>
           ))}
         </ul>

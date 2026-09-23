@@ -63,6 +63,8 @@ export function RegisterForm({
 
   const [passType, setPassType] = useState<PassType>(initialPass);
   const [quantity, setQuantity] = useState(1);
+  // Only used by a variable-size pass; starts at that pass's minimum.
+  const [groupSize, setGroupSize] = useState(PASSES.GROUP4.sizeRange!.min);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -75,12 +77,19 @@ export function RegisterForm({
   const pass = PASSES[passType];
   const busy = status !== "idle";
 
+  // Mirrors quoteFor on the server. The server still recomputes everything —
+  // this only decides what the buyer sees before they pay.
+  const seatsPerPass = pass.sizeRange ? groupSize : pass.seats;
+  const perPassPaise = pass.sizeRange
+    ? groupSize * pass.perPersonPaise
+    : pass.pricePaise;
+
   const totals = useMemo(
     () => ({
-      amountPaise: pass.pricePaise * quantity,
-      seats: pass.seats * quantity,
+      amountPaise: perPassPaise * quantity,
+      seats: seatsPerPass * quantity,
     }),
-    [pass, quantity],
+    [perPassPaise, seatsPerPass, quantity],
   );
 
   function validateLocally(): string | null {
@@ -117,6 +126,7 @@ export function RegisterForm({
           phone: phone.trim(),
           passType,
           quantity,
+          ...(pass.sizeRange ? { groupSize } : {}),
           website,
         }),
       });
@@ -145,7 +155,12 @@ export function RegisterForm({
         amount: order.amountPaise,
         currency: order.currency,
         name: `${EVENT.name} ${EVENT.year}`,
-        description: `${order.passName} × ${quantity}`,
+        // Shown on Razorpay's payment screen, so it must describe what the
+        // buyer is actually paying for — "Group of 4 or More x 1" would be
+        // baffling when they picked a group of six.
+        description: `${totals.seats} ${
+          totals.seats === 1 ? "person" : "people"
+        } · ${order.passName}${quantity > 1 ? ` × ${quantity}` : ""}`,
         order_id: order.orderId,
         prefill: order.prefill,
         notes: { bookingCode: order.bookingCode },
@@ -268,20 +283,95 @@ export function RegisterForm({
                 <p className="font-display text-lg font-semibold text-cream">
                   {option.name}
                 </p>
+                {option.badge && (
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-rose-300">
+                    {option.badge}
+                  </p>
+                )}
                 <p className="mt-1.5 font-display text-2xl text-gold-400">
+                  {option.sizeRange ? "from " : ""}
                   {formatInr(option.pricePaise)}
                 </p>
                 <p className="mt-1 text-[11px] text-muted">
-                  Admits {option.seats}
-                  {option.seats > 1 &&
-                    ` · ${formatInr(option.perPersonPaise)} each`}
+                  {option.sizeRange
+                    ? `${option.sizeRange.min}+ people · ${formatInr(option.perPersonPaise)} each`
+                    : `Admits ${option.seats}${
+                        option.seats > 1
+                          ? ` · ${formatInr(option.perPersonPaise)} each`
+                          : ""
+                      }`}
                 </p>
               </label>
             );
           })}
         </div>
 
-        <div className="mt-5 flex items-center justify-between rounded-2xl border border-night-500/70 bg-night-800/45 px-5 py-4">
+        {/* Age rules belong next to the choice, not only in the FAQ. */}
+        <p className="mt-3 rounded-xl border border-gold-600/25 bg-night-800/40 px-4 py-3 text-[11px] leading-relaxed text-muted">
+          {passType === "CHILD" ? (
+            <>
+              <span className="font-semibold text-gold-400">
+                Child Pass is for ages 6 to 12.
+              </span>{" "}
+              Children under 6 enter free with a paying adult — no pass needed.
+              From 13 onwards, please book a Solo, Couple or Group pass.
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-gold-400">
+                Children under 6 enter free
+              </span>{" "}
+              with a paying adult. Ages 6 to 12 need a Child Pass at{" "}
+              {formatInr(PASSES.CHILD.pricePaise)}.
+            </>
+          )}
+        </p>
+
+        {pass.sizeRange && (
+          <div className="mt-5 flex items-center justify-between rounded-2xl border border-gold-600/30 bg-night-800/45 px-5 py-4">
+            <div>
+              <p className="text-sm font-medium text-cream">
+                How many people in the group?
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted">
+                {pass.sizeRange.min} to {pass.sizeRange.max} people ·{" "}
+                {formatInr(pass.perPersonPaise)} each
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() =>
+                  setGroupSize((g) => Math.max(pass.sizeRange!.min, g - 1))
+                }
+                disabled={groupSize <= pass.sizeRange.min}
+                aria-label="Fewer people in the group"
+                className="h-9 w-9 rounded-lg border border-night-500 text-lg text-cream transition-colors hover:border-gold-600/50 hover:text-gold-400 disabled:opacity-35"
+              >
+                &minus;
+              </button>
+              <span
+                className="w-10 text-center font-display text-xl tabular-nums text-gold-400"
+                aria-live="polite"
+              >
+                {groupSize}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setGroupSize((g) => Math.min(pass.sizeRange!.max, g + 1))
+                }
+                disabled={groupSize >= pass.sizeRange.max}
+                aria-label="More people in the group"
+                className="h-9 w-9 rounded-lg border border-night-500 text-lg text-cream transition-colors hover:border-gold-600/50 hover:text-gold-400 disabled:opacity-35"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-night-500/70 bg-night-800/45 px-5 py-4">
           <div>
             <p className="text-sm font-medium text-cream">
               How many {pass.name} passes?
@@ -345,7 +435,7 @@ export function RegisterForm({
             placeholder="you@example.com"
             autoComplete="email"
             maxLength={160}
-            hint="Your QR ticket is sent here — please double-check it."
+            hint="Used with your mobile number to find your pass again if you lose it — please double-check both."
           />
           <Field
             id="phone"
@@ -356,7 +446,7 @@ export function RegisterForm({
             placeholder="98765 43210"
             autoComplete="tel"
             maxLength={15}
-            hint="Used only if we need to reach you about the event."
+            hint="Used to recover your pass, and if we need to reach you about the event."
           />
 
           {/* Honeypot — hidden from people, irresistible to bots. */}

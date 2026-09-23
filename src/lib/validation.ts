@@ -55,6 +55,9 @@ export const createOrderSchema = z.object({
   phone: phoneSchema,
   passType: passTypeSchema,
   quantity: z.coerce.number().int().min(MIN_QUANTITY).max(MAX_QUANTITY),
+  // Only meaningful for a variable-size pass; quoteFor rejects it on the
+  // fixed-size ones rather than silently ignoring it.
+  groupSize: z.coerce.number().int().min(1).max(50).optional(),
   // Honeypot: real users never fill a hidden field. Bots do. Accept any
   // string here so the route can recognise a bot deliberately, rather than
   // having the parse fail and look like an ordinary validation error.
