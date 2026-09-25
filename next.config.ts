@@ -4,9 +4,17 @@ import type { NextConfig } from "next";
  * Content-Security-Policy is intentionally strict but must allow Razorpay's
  * checkout bundle, its iframes and its API/telemetry hosts, or payments break.
  */
+/**
+ * React's development build uses `eval()` for debugging features such as
+ * rebuilding stack traces, so a CSP without 'unsafe-eval' stops `next dev`
+ * from running at all. Production never needs it, and granting it there would
+ * undo much of what script-src is for — so it is added in development only.
+ */
+const devOnly = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://*.razorpay.com",
+  `script-src 'self' 'unsafe-inline'${devOnly} https://checkout.razorpay.com https://*.razorpay.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https://*.razorpay.com",
@@ -51,6 +59,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // The dev server only answers requests whose origin is localhost. A public
+  // tunnel arrives under its own hostname, so without this the page loads but
+  // its chunks and hot-reload socket are refused. Dev only — it has no effect
+  // on a production build, and Netlify never sees it.
+  allowedDevOrigins: ["*.tunnelmole.net", "*.trycloudflare.com"],
   // There is another package-lock.json in the parent folder, which makes
   // Next guess the wrong workspace root. Pin it to this project.
   turbopack: { root: process.cwd() },

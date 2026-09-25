@@ -56,8 +56,8 @@ type ContactDetails = {
 // "" type would narrow to `never` inside the `if (CONTACT.phone)` guards that
 // decide whether each channel renders.
 export const CONTACT: ContactDetails = {
-  whatsapp: "918448702151",
-  phone: "+91 84487 02151",
+  whatsapp: "917042640474",
+  phone: "+91 70426 40474",
   address: "A-14, Gagan Enclave\nGhaziabad, Uttar Pradesh",
   hours: "10 AM to 8 PM, every day",
 };
@@ -66,6 +66,29 @@ export function whatsappUrl(message?: string): string | null {
   if (!CONTACT.whatsapp) return null;
   const text = message ?? `Hi! I have a question about ${EVENT.name} ${EVENT.year}.`;
   return `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
+}
+
+/**
+ * A link that opens the guest's OWN WhatsApp with their pass link ready to
+ * send, so they can park it in a chat with themselves or forward it to whoever
+ * they are coming with.
+ *
+ * Note the empty number: `wa.me` with no recipient opens the contact picker.
+ * Nothing is sent from our side, which is the point — this needs no WhatsApp
+ * Business account, no template approval and costs nothing per message.
+ */
+export function sharePassOnWhatsAppUrl(passUrl: string, firstName?: string): string {
+  const who = firstName ? `${firstName}'s` : "Your";
+  const text = [
+    `${who} pass for ${EVENT.name} ${EVENT.year} — ${EVENT.tagline}`,
+    "",
+    `${EVENT.dayLabel}, ${EVENT.dateLabel} · ${EVENT.timeLabel}`,
+    `${EVENT.venue}, ${EVENT.venueArea}`,
+    "",
+    "Show the QR code at the entrance:",
+    passUrl,
+  ].join("\n");
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }
 
 export const HIGHLIGHTS = [

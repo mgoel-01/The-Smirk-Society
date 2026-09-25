@@ -37,6 +37,23 @@
   --animate-float: float 7s ease-in-out infinite;
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-rise: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  /* Festival motifs — see GarbaMotifs.tsx. */
+  --animate-spin-slow: spin-slow 52s linear infinite;
+  --animate-spin-slow-reverse: spin-slow 68s linear infinite reverse;
+  --animate-bob: bob 2.4s ease-in-out infinite;
+  --animate-flicker: flicker 2.6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 3.4s ease-in-out infinite;
+  --animate-sway: sway 9s ease-in-out infinite;
+  --animate-tap-left: tap-left 0.9s ease-in-out infinite;
+  --animate-tap-right: tap-right 0.9s ease-in-out infinite;
+  --animate-spark: spark 0.9s ease-in-out infinite;
+
+  /* Magic UI primitives — durations come from the component's own vars. */
+  --animate-meteor: meteor var(--meteor-duration, 6s) linear infinite;
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-shiny-text: shiny-text 7s ease-in-out infinite;
 }
 
 @keyframes twinkle {
@@ -58,7 +75,145 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* The beat travelling around the garba circle. */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+/* A flame never repeats itself, so neither do these four stops. */
+@keyframes flicker {
+  0%, 100% { transform: scale(1, 1);        opacity: 0.92; }
+  25%      { transform: scale(0.94, 1.12);  opacity: 1; }
+  50%      { transform: scale(1.06, 0.94);  opacity: 0.84; }
+  75%      { transform: scale(0.97, 1.08);  opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.08; transform: scale(0.9); }
+  50%      { opacity: 0.22; transform: scale(1.18); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3.5deg); }
+  50%      { transform: rotate(3.5deg); }
+}
+
+/* Two sticks meeting on the beat, and the spark at the moment they do. */
+@keyframes tap-left {
+  0%, 100% { transform: rotate(-16deg); }
+  50%      { transform: rotate(2deg); }
+}
+
+@keyframes tap-right {
+  0%, 100% { transform: rotate(16deg); }
+  50%      { transform: rotate(-2deg); }
+}
+
+@keyframes spark {
+  0%, 34%, 100% { opacity: 0; transform: scale(0.4); }
+  50%           { opacity: 1; transform: scale(1.15); }
+  68%           { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes meteor {
+  0%   { transform: rotate(var(--angle)) translateX(0);       opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: rotate(var(--angle)) translateX(-620px);  opacity: 0; }
+}
+
+/* The track is translated by exactly one copy plus one gap, so the loop is
+   seamless however many times the children are repeated. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-100% - var(--gap))); }
+}
+
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-100% - var(--gap))); }
+}
+
+/* Scroll-driven reveals. These run off the scroll position rather than a
+   clock, so they need no JavaScript and no `duration`. */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(22px); filter: blur(7px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+@keyframes scroll-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes border-beam {
+  from { offset-distance: 0%; }
+  to   { offset-distance: 100%; }
+}
+
+@keyframes shiny-text {
+  0%, 88%, 100% { background-position: calc(-100% - var(--shiny-width)) 0; }
+  40%, 56%      { background-position: calc(100%  + var(--shiny-width)) 0; }
+}
+
 /* --------------------------------------------------------------------------- */
+
+/* An SVG element transforms about the whole viewBox by default, which is what
+   the rangoli and the dancer rings want. These pieces instead need to pivot on
+   their own geometry, so they opt into their own bounding box. */
+.animate-flicker,
+.animate-pulse-glow,
+.animate-sway {
+  transform-box: fill-box;
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal on scroll.
+
+   Deliberately additive: an element with `.reveal` is fully visible on its
+   own, and only browsers that support scroll-driven animations take it away
+   and give it back as you scroll past. Nothing here depends on JavaScript, so
+   a slow network or a failed bundle costs the reader a flourish, never the
+   content — which on a page that sells tickets is the whole point.
+
+   `--reveal-shift` nudges an item later in the scroll, staggering a row of
+   cards without staggering them in time.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range:
+        entry calc(2% + var(--reveal-shift, 0%))
+        entry calc(56% + var(--reveal-shift, 0%));
+    }
+  }
+}
+
+/* The reading-progress hairline, driven by the document scroller. Without
+   support it stays at zero width and simply never appears. */
+.scroll-progress {
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+/* The travelling highlight on a card edge. `offset-path` is set per instance,
+   since it has to match that card's corner radius. */
+.border-beam {
+  animation: border-beam var(--beam-duration, 6s) linear infinite;
+  animation-delay: var(--beam-delay, 0s);
+}
 
 html {
   scroll-behavior: smooth;

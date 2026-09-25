@@ -2,6 +2,20 @@ import Link from "next/link";
 import { EVENT, HIGHLIGHTS, mapsUrl } from "@/lib/event";
 import { PASS_LIST, PASSES, formatInr } from "@/lib/pricing";
 import { Bokeh, Divider, StringLights } from "@/components/Decor";
+import {
+  DandiyaTap,
+  Diya,
+  GarbaCircle,
+  PeacockFeather,
+  Rangoli,
+} from "@/components/GarbaMotifs";
+import { AnimatedShinyText } from "@/components/magic/AnimatedShinyText";
+import { BorderBeam } from "@/components/magic/BorderBeam";
+import { Marquee } from "@/components/magic/Marquee";
+import { Meteors } from "@/components/magic/Meteors";
+import { Particles } from "@/components/magic/Particles";
+import { ScrollProgress } from "@/components/magic/ScrollProgress";
+import { Associates } from "@/components/Associates";
 import { Countdown } from "@/components/Countdown";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import {
@@ -101,8 +115,16 @@ function Nav() {
 function Hero() {
   return (
     <section className="relative isolate overflow-hidden festival-haze">
-      <StringLights />
+      {/* Background, back to front: rangoli, bokeh, drifting dust, embers,
+          then the string lights nearest the reader. */}
+      <Rangoli
+        size={760}
+        className="absolute left-1/2 top-[-22%] -z-10 -translate-x-1/2 text-gold-600/[0.07]"
+      />
       <Bokeh />
+      <Particles quantity={110} />
+      <Meteors number={14} />
+      <StringLights />
 
       <div className="relative mx-auto max-w-4xl px-5 pb-20 pt-24 text-center sm:pt-28">
         <p className="animate-rise text-[10px] uppercase tracking-[0.42em] text-gold-500 sm:text-xs">
@@ -119,8 +141,10 @@ function Hero() {
           className="mt-7 flex animate-rise justify-center"
           style={{ animationDelay: "120ms" }}
         >
-          <span className="rounded-full bg-gradient-to-r from-wine-600 via-rose-600 to-wine-600 px-6 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-gold-300 shadow-lg shadow-rose-900/40 sm:text-xs">
-            {EVENT.ribbon}
+          <span className="rounded-full bg-gradient-to-r from-wine-600 via-rose-600 to-wine-600 px-6 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] shadow-lg shadow-rose-900/40 sm:text-xs">
+            <AnimatedShinyText className="text-gold-300">
+              {EVENT.ribbon}
+            </AnimatedShinyText>
           </span>
         </div>
 
@@ -230,24 +254,32 @@ function Hero() {
   );
 }
 
-function Marquee() {
+/**
+ * The ticker of what is on offer. It scrolls rather than wrapping, so the
+ * strip stays one line tall on a phone and still lists everything; the edges
+ * are faded out with a mask so items arrive and leave instead of popping.
+ */
+function HighlightsTicker() {
   const items = [
     "Live Band", "Dhol", "DJ Night", "Food Stalls", "Shopping",
     "Free Dandiya Sticks", "Fun Games", "Photographer", "Thematic Decor",
   ];
   return (
-    <div className="overflow-hidden border-y border-night-600/60 bg-night-800/50 py-3.5">
-      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-4">
+    <div className="relative overflow-hidden border-y border-night-600/60 bg-night-800/50 py-2">
+      <Marquee
+        pauseOnHover
+        className="[--duration:42s] [--gap:1.5rem] [mask-image:linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)]"
+      >
         {items.map((item) => (
           <span
             key={item}
-            className="flex items-center gap-2.5 text-[10px] uppercase tracking-[0.2em] text-gold-500/85 sm:text-xs"
+            className="flex items-center gap-2.5 whitespace-nowrap text-[10px] uppercase tracking-[0.2em] text-gold-500/85 sm:text-xs"
           >
             {item}
             <span className="text-rose-500/60" aria-hidden="true">&#9670;</span>
           </span>
         ))}
-      </div>
+      </Marquee>
     </div>
   );
 }
@@ -255,7 +287,12 @@ function Marquee() {
 function Highlights() {
   return (
     <section className="relative mx-auto max-w-6xl px-5 py-20">
-      <div className="text-center">
+      <PeacockFeather
+        width={74}
+        className="absolute -top-6 right-2 hidden text-gold-500/20 lg:block"
+      />
+
+      <div className="reveal text-center">
         <p className="text-[10px] uppercase tracking-[0.3em] text-rose-400">
           What&rsquo;s inside
         </p>
@@ -266,20 +303,26 @@ function Highlights() {
       </div>
 
       <ul className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {HIGHLIGHTS.map((item) => {
+        {HIGHLIGHTS.map((item, index) => {
           const Icon = HIGHLIGHT_ICONS[item.icon];
           return (
             <li
               key={item.label}
-              className="group rounded-2xl border border-night-600/70 bg-night-800/45 p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-gold-600/45 hover:bg-night-700/55"
+              className="reveal"
+              style={{ "--reveal-shift": `${index * 5}%` } as React.CSSProperties}
             >
-              <Icon className="mx-auto h-7 w-7 text-gold-500 transition-colors group-hover:text-gold-400" />
-              <h3 className="mt-3.5 text-sm font-semibold leading-snug text-cream">
-                {item.label}
-              </h3>
-              <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                {item.note}
-              </p>
+              {/* The hover lift lives on the inner card: an animation's
+                  transform outranks a hover rule, so the two cannot share an
+                  element without the lift going dead once the reveal lands. */}
+              <div className="group h-full rounded-2xl border border-night-600/70 bg-night-800/45 p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-gold-600/45 hover:bg-night-700/55">
+                <Icon className="mx-auto h-7 w-7 text-gold-500 transition-transform duration-300 group-hover:scale-110 group-hover:text-gold-400" />
+                <h3 className="mt-3.5 text-sm font-semibold leading-snug text-cream">
+                  {item.label}
+                </h3>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                  {item.note}
+                </p>
+              </div>
             </li>
           );
         })}
@@ -290,9 +333,13 @@ function Highlights() {
 
 function Passes() {
   return (
-    <section id="passes" className="relative scroll-mt-20 festival-haze">
-      <div className="mx-auto max-w-6xl px-5 py-20">
-        <div className="text-center">
+    <section id="passes" className="relative scroll-mt-20 overflow-hidden festival-haze">
+      <Rangoli
+        size={620}
+        className="absolute -left-40 top-1/4 text-rose-500/[0.06]"
+      />
+      <div className="relative mx-auto max-w-6xl px-5 py-20">
+        <div className="reveal text-center">
           <p className="text-[10px] uppercase tracking-[0.3em] text-rose-400">
             Entry passes
           </p>
@@ -307,17 +354,31 @@ function Passes() {
         </div>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PASS_LIST.map((pass) => {
+          {PASS_LIST.map((pass, index) => {
             const featured = pass.id === "COUPLE";
             return (
               <div
                 key={pass.id}
-                className={`relative flex flex-col rounded-3xl border p-7 transition-all duration-300 hover:-translate-y-1.5 ${
-                  featured
-                    ? "border-gold-600/55 bg-gradient-to-b from-night-700/90 to-night-800/70 card-glow"
-                    : "border-night-500/70 bg-night-800/55"
-                }`}
+                className="reveal"
+                style={{ "--reveal-shift": `${index * 6}%` } as React.CSSProperties}
               >
+                <div
+                  className={`relative flex h-full flex-col rounded-3xl border p-7 transition-all duration-300 hover:-translate-y-1.5 ${
+                    featured
+                      ? "border-gold-600/55 bg-gradient-to-b from-night-700/90 to-night-800/70 card-glow"
+                      : "border-night-500/70 bg-night-800/55"
+                  }`}
+                >
+                {/* The pass most groups want gets a gold thread running its
+                    edge — two beams, half a cycle apart, so the card is never
+                    completely dark. */}
+                {featured && (
+                  <>
+                    <BorderBeam duration={7} size={70} />
+                    <BorderBeam duration={7} delay={3.5} size={70} reverse />
+                  </>
+                )}
+
                 {pass.badge && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-gradient-to-r from-rose-600 to-rose-500 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-lg shadow-rose-900/40">
                     {pass.badge}
@@ -373,13 +434,14 @@ function Passes() {
                   }`}
                 >
                   Book {pass.name}
-                </Link>
+                  </Link>
+                </div>
               </div>
             );
           })}
         </div>
 
-        <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-gold-600/30 bg-night-800/50 px-6 py-5 text-center">
+        <div className="reveal mx-auto mt-10 max-w-2xl rounded-2xl border border-gold-600/30 bg-night-800/50 px-6 py-5 text-center">
           <p className="font-display text-lg text-gold-400">
             Children under 6 enter free
           </p>
@@ -403,7 +465,7 @@ function Details() {
     <section id="details" className="scroll-mt-20 border-t border-night-600/50">
       <div className="mx-auto max-w-6xl px-5 py-20">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-          <div>
+          <div className="reveal">
             <p className="text-[10px] uppercase tracking-[0.3em] text-rose-400">
               The details
             </p>
@@ -452,11 +514,18 @@ function Details() {
             </a>
           </div>
 
-          <div className="rounded-3xl border border-night-500/70 bg-night-800/55 p-7 sm:p-9">
-            <h3 className="font-display text-2xl font-semibold text-gold-400">
+          <div
+            className="reveal relative overflow-hidden rounded-3xl border border-night-500/70 bg-night-800/55 p-7 sm:p-9"
+            style={{ "--reveal-shift": "8%" } as React.CSSProperties}
+          >
+            <GarbaCircle
+              size={300}
+              className="absolute -bottom-20 -right-20 text-gold-500/[0.09]"
+            />
+            <h3 className="relative font-display text-2xl font-semibold text-gold-400">
               Good to know
             </h3>
-            <ul className="mt-6 space-y-4 text-sm leading-relaxed text-cream/80">
+            <ul className="relative mt-6 space-y-4 text-sm leading-relaxed text-cream/80">
               {[
                 ["Dress code", "Traditional or ethnic wear — chaniya choli, kurta, whatever makes you want to twirl."],
                 ["Dandiya sticks", "Provided free at the entrance. Bring your own if you have a favourite pair."],
@@ -509,8 +578,9 @@ function Faq() {
   return (
     <section id="faq" className="scroll-mt-20 border-t border-night-600/50">
       <div className="mx-auto max-w-3xl px-5 py-20">
-        <div className="text-center">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-rose-400">
+        <div className="reveal text-center">
+          <DandiyaTap size={52} className="mx-auto text-gold-500/80" />
+          <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-rose-400">
             Questions
           </p>
           <h2 className="mt-3 font-display text-4xl font-semibold text-cream sm:text-5xl">
@@ -520,11 +590,13 @@ function Faq() {
         </div>
 
         <div className="mt-10 space-y-3">
-          {faqs.map((faq) => (
-            <details
+          {faqs.map((faq, index) => (
+            <div
               key={faq.q}
-              className="group rounded-2xl border border-night-600/70 bg-night-800/45 transition-colors open:border-gold-600/35 open:bg-night-800/70"
+              className="reveal"
+              style={{ "--reveal-shift": `${index * 4}%` } as React.CSSProperties}
             >
+              <details className="group rounded-2xl border border-night-600/70 bg-night-800/45 transition-colors open:border-gold-600/35 open:bg-night-800/70">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-left font-medium text-cream marker:content-none">
                 {faq.q}
                 <span
@@ -534,10 +606,11 @@ function Faq() {
                   +
                 </span>
               </summary>
-              <p className="px-6 pb-5 text-sm leading-relaxed text-muted">
-                {faq.a}
-              </p>
-            </details>
+                <p className="px-6 pb-5 text-sm leading-relaxed text-muted">
+                  {faq.a}
+                </p>
+              </details>
+            </div>
           ))}
         </div>
       </div>
@@ -549,8 +622,16 @@ function FinalCta() {
   return (
     <section className="relative overflow-hidden festival-haze">
       <Bokeh />
-      <div className="relative mx-auto max-w-3xl px-5 py-24 text-center">
-        <h2 className="font-script text-5xl text-gold-400 sm:text-6xl">
+      <Particles quantity={60} color="#e0447e" />
+      {/* The circle closes the page the way it opens the night. */}
+      <GarbaCircle
+        size={440}
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gold-500/[0.11]"
+      />
+
+      <div className="reveal relative mx-auto max-w-3xl px-5 py-24 text-center">
+        <Diya size={52} className="mx-auto text-gold-400" />
+        <h2 className="mt-4 font-script text-5xl text-gold-400 sm:text-6xl">
           See you there!
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-cream/75">
@@ -627,10 +708,12 @@ export default function HomePage() {
   return (
     <>
       <EventJsonLd />
+      <ScrollProgress />
       <Nav />
       <main>
         <Hero />
-        <Marquee />
+        <Associates />
+        <HighlightsTicker />
         <Highlights />
         <Passes />
         <Details />

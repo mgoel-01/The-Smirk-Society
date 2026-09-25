@@ -1,7 +1,7 @@
 import "server-only";
 import { Resend } from "resend";
 import { env } from "./env";
-import { EVENT, mapsUrl } from "./event";
+import { EVENT, mapsUrl, sharePassOnWhatsAppUrl } from "./event";
 import { formatInr } from "./pricing";
 import { qrPngBuffer } from "./qr";
 
@@ -39,17 +39,31 @@ function buildHtml(p: TicketEmailPayload): string {
         p.tickets.length > 1
           ? `Pass ${i + 1} of ${p.tickets.length}`
           : "View your pass";
+      // The secondary link opens the reader's own WhatsApp with this pass
+      // ready to forward, which is how most guests will want to carry it and
+      // how a group leader hands each pass to the person it belongs to.
+      const share = sharePassOnWhatsAppUrl(url, name);
       return `
         <tr><td style="padding:6px 0;">
           <a href="${url}" style="display:block;background:#C2185B;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:10px;font-weight:700;font-size:15px;text-align:center;font-family:${SANS};">
             ${label} &nbsp;&middot;&nbsp; Admits ${t.seats}
+          </a>
+        </td></tr>
+        <tr><td style="padding:0 0 10px;text-align:center;">
+          <a href="${share}" style="color:#25D366;text-decoration:none;font-size:12px;font-weight:700;font-family:${SANS};">
+            Send this pass to WhatsApp &rarr;
           </a>
         </td></tr>`;
     })
     .join("");
 
   return `<!doctype html>
-<html><body style="margin:0;padding:0;background:#1A0610;">
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#1A0610;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#1A0610;padding:28px 12px;">
 <tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#26091A;border:1px solid #4A1730;border-radius:16px;overflow:hidden;">
@@ -128,6 +142,9 @@ function buildText(p: TicketEmailPayload): string {
     ``,
     `Your passes:`,
     links,
+    ``,
+    `Tip: open a pass link on your phone and tap "Send to WhatsApp" to keep it`,
+    `in a chat, so you are not hunting through email at the gate.`,
     ``,
     `Show the QR code at the entrance. Keep it private - each pass scans once.`,
     `Questions? Reply here or DM @${EVENT.instagram}.`,
